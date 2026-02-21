@@ -71,7 +71,7 @@ SAMPLE_SIZE = 50_000
 # ── Пути к данным ─────────────────────────────────────────────────
 import pathlib
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent / "data"
+DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 AGG_DIR = DATA_DIR / "aggregated"
 SAMPLE_DIR = DATA_DIR / "sample"
 SAMPLE_FILE = SAMPLE_DIR / "soldiers_sample_50k.parquet"

@@ -249,7 +249,7 @@ def make_migration_matrix(df: pd.DataFrame):
     df["birth_region"] = df.get("birthplace", df.get("region", pd.Series()))
     df["submit_region"] = df.get("added_region", df.get("region", pd.Series()))
 
-    valid = df[df["birth_region"].notna() & df["submit_region"].notna()]
+    valid = df[df["birth_region"].notna() & df["submit_region"].notna()].copy()
     # Чистим длинные строки — берём только первую часть (до запятой, как регион)
     for col in ["birth_region", "submit_region"]:
         valid[col] = valid[col].astype(str).str.split(",").str[0].str.strip()

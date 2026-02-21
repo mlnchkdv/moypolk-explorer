@@ -68,22 +68,25 @@ PAGE_SIZE = 20
 if "search_page" not in st.session_state:
     st.session_state.search_page = 0
 
-if st.button("🔍 Найти", type="primary") or query_text:
+search_clicked = st.button("🔍 Найти", type="primary")
+if search_clicked:
     st.session_state.search_page = 0
 
+if search_clicked or query_text:
     # Построение запроса
     conditions = []
-    params = []
 
     if query_text.strip():
         safe_query = query_text.strip().replace("'", "''")
         conditions.append(f"(fio ILIKE '%{safe_query}%' OR story ILIKE '%{safe_query}%')")
 
     if selected_region != "Все регионы":
-        conditions.append(f"region = '{selected_region}'")
+        safe_region = selected_region.replace("'", "''")
+        conditions.append(f"region = '{safe_region}'")
 
     if selected_rank != "Все звания":
-        conditions.append(f"rank = '{selected_rank}'")
+        safe_rank = selected_rank.replace("'", "''")
+        conditions.append(f"rank = '{safe_rank}'")
 
     # Год рождения — парсинг из строки birthday
     # В данных birthday может быть строкой; фильтруем по LIKE для года
