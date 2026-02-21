@@ -1,0 +1,33 @@
+# Исходные данные (слишком большие для GitHub)
+polk_11_05_2025_done.csv
+*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Скрипт подготовки (используется только локально)
+prepare_data.py

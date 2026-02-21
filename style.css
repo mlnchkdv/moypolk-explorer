@@ -1,0 +1,90 @@
+/* ── Бессмертный полк — стили ─────────────────────────────────── */
+
+/* Метрики */
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border-left: 4px solid #1565C0;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1565C0;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 0.9rem;
+    color: #424242;
+}
+
+/* Заголовки */
+h1 {
+    color: #1565C0 !important;
+    border-bottom: 3px solid #E53935;
+    padding-bottom: 8px;
+}
+
+h2, h3 {
+    color: #212121 !important;
+}
+
+/* Divider */
+hr {
+    border-color: #E0E0E0 !important;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #E3F2FD 0%, #FAFAFA 100%);
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdown"] p {
+    font-size: 0.9rem;
+}
+
+/* Контейнер с рамкой (карточки поиска) */
+[data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
+    border-radius: 8px;
+}
+
+/* Кнопки */
+.stButton > button[kind="primary"] {
+    background-color: #1565C0;
+    border-color: #1565C0;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background-color: #0D47A1;
+    border-color: #0D47A1;
+}
+
+/* Таблицы */
+[data-testid="stDataFrame"] {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Info / warning boxes */
+[data-testid="stAlert"] {
+    border-radius: 8px;
+}
+
+/* Tabs */
+[data-testid="stTab"] {
+    font-weight: 500;
+}
+
+/* Убираем отступы для широкого layout */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
