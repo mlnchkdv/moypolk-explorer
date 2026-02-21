@@ -163,23 +163,85 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
         st.markdown(
             "Двухвыборочный тест KS проверяет, различаются ли распределения возраста "
             "между парами категорий звания. Малый p-value (< 0.05) означает "
-            "статистически значимое различие."
+            "статистически значимое различие. "
+            "Реализован на NumPy без внешних зависимостей."
         )
 
+    def ks_2samp_numpy(x: np.ndarray, y: np.ndarray):
+        """Двухвыборочный тест KS на основе NumPy."""
+        if len(x) == 0 or len(y) == 0:
+            return np.nan, np.nan
+        x = np.sort(x)
+        y = np.sort(y)
+        n1, n2 = len(x), len(y)
+        combined = np.sort(np.concatenate([x, y]))
+        cdf_x = np.searchsorted(x, combined, side="right") / n1
+        cdf_y = np.searchsorted(y, combined, side="right") / n2
+        d = float(np.max(np.abs(cdf_x - cdf_y)))
+        # Аппроксимация p-value через распределение Колмогорова
+        n_eff = (n1 * n2) / (n1 + n2)
+        z = d * np.sqrt(n_eff)
+        # P = 2 * sum_{k=1}^{inf} (-1)^{k-1} * exp(-2 k^2 z^2)
+        p = 2.0 * sum(
+            ((-1) ** (k - 1)) * np.exp(-2.0 * k * k * z * z)
+            for k in range(1, 50)
+        )
+        p = float(np.clip(p, 0.0, 1.0))
+        return d, p
+
     if len(rank_groups) >= 2:
-        # Упрощённая таблица KS (без scipy — показываем placeholder)
+        # Реконструируем выборки из агрегированных данных (age, count)
+        # Ограничиваем до 5000 точек на группу для скорости
+        MAX_SAMPLE = 5000
+        samples = {}
+        for rg in rank_groups:
+            sub = df[df["rank_group"] == rg]
+            if "count" in sub.columns:
+                ages = sub["age"].values.astype(int)
+                counts = sub["count"].values.astype(int)
+                expanded = np.repeat(ages, counts)
+                if len(expanded) > MAX_SAMPLE:
+                    rng = np.random.default_rng(42)
+                    expanded = rng.choice(expanded, MAX_SAMPLE, replace=False)
+                samples[rg] = expanded
+            else:
+                samples[rg] = sub["age"].dropna().values
+
         ks_data = []
         for i in range(len(rank_groups)):
             for j in range(i + 1, len(rank_groups)):
+                rg1, rg2 = rank_groups[i], rank_groups[j]
+                x, y = samples.get(rg1, np.array([])), samples.get(rg2, np.array([]))
+                d, p = ks_2samp_numpy(x, y)
+                if np.isnan(d):
+                    sig = "нет данных"
+                elif p < 0.001:
+                    sig = "✅ Да (p < 0.001)"
+                elif p < 0.05:
+                    sig = "✅ Да (p < 0.05)"
+                else:
+                    sig = "❌ Нет (p ≥ 0.05)"
                 ks_data.append({
-                    "Группа 1": rank_groups[i],
-                    "Группа 2": rank_groups[j],
-                    "KS-статистика": "—",
-                    "p-value": "—",
-                    "Различие": "—",
+                    "Группа 1": rg1,
+                    "Группа 2": rg2,
+                    "n₁": len(x),
+                    "n₂": len(y),
+                    "KS-статистика": f"{d:.4f}" if not np.isnan(d) else "—",
+                    "p-value": f"{p:.4f}" if not np.isnan(p) else "—",
+                    "Значимое различие": sig,
                 })
-        st.caption("Для вычисления KS-тестов необходим полный датасет. Здесь показана структура таблицы.")
+
         st.dataframe(pd.DataFrame(ks_data), use_container_width=True, hide_index=True)
+
+        st.info(
+            "**Вывод для исследователя.** Значимые различия в распределениях возраста "
+            "между группами (p < 0.05) подтверждают, что война не «выровняла» демографию "
+            "полностью: возрастные профили разных категорий звания статистически различались. "
+            "Сравните KS-статистику с графиком конвергенции: "
+            "высокая статистика при малом разрыве медиан указывает на различие в форме "
+            "распределения (дисперсия, асимметрия), а не только в центральной тенденции.",
+            icon="🔬",
+        )
 
 else:
     st.info(

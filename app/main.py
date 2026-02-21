@@ -27,8 +27,7 @@ pages = [
     st.Page("pages/03_География.py", title="География", icon="🗺️"),
     st.Page("pages/04_Демография.py", title="Демография", icon="🎖️"),
     st.Page("pages/05_DMI.py", title="DMI", icon="📊"),
-    st.Page("pages/06_Поиск.py", title="Поиск 50K", icon="🔍"),
-    st.Page("pages/07_Поиск_полный.py", title="Поиск расширенный", icon="🔎"),
+    st.Page("pages/07_Поиск_полный.py", title="Поиск по карточкам", icon="🔎"),
 ]
 
 pg = st.navigation(pages)

@@ -75,4 +75,5 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 AGG_DIR = DATA_DIR / "aggregated"
 SAMPLE_DIR = DATA_DIR / "sample"
 SAMPLE_FILE = SAMPLE_DIR / "soldiers_sample_50k.parquet"
-FULL_SEARCH_FILE = DATA_DIR / "full" / "soldiers_fts.parquet"
+FULL_SEARCH_DIR  = DATA_DIR / "full"
+FULL_SEARCH_FILE = FULL_SEARCH_DIR / "soldiers_fts.parquet"  # single-file fallback

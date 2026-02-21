@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 import pathlib
-from config import AGG_DIR, SAMPLE_FILE, FULL_SEARCH_FILE
+from config import AGG_DIR, SAMPLE_FILE, FULL_SEARCH_DIR, FULL_SEARCH_FILE
 
 
 def _load_parquet(name: str) -> pd.DataFrame:
@@ -101,15 +101,28 @@ def get_duckdb_connection():
 
 @st.cache_resource
 def get_full_search_connection():
-    """DuckDB-соединение для поиска по полному FTS-файлу (если создан prepare_data.py).
-    Возвращает None, если файл не найден (откат на сэмпл 50K в странице поиска).
+    """DuckDB-соединение для поиска по полному FTS-датасету.
+
+    Поддерживает два формата хранения:
+      1. Чанки: data/full/soldiers_fts_part*.parquet  (< 100 MB каждый, совместимо с GitHub)
+      2. Одиночный файл: data/full/soldiers_fts.parquet  (legacy / локальный)
+
+    Возвращает None, если данные не найдены (откат на сэмпл 50K).
     """
     import duckdb
 
-    if not FULL_SEARCH_FILE.exists():
-        return None
-    con = duckdb.connect(":memory:")
-    con.execute(
-        f"CREATE TABLE soldiers_full AS SELECT * FROM read_parquet('{FULL_SEARCH_FILE}')"
-    )
-    return con
+    chunks = sorted(FULL_SEARCH_DIR.glob("soldiers_fts_part*.parquet"))
+    if chunks:
+        glob_str = str(FULL_SEARCH_DIR / "soldiers_fts_part*.parquet")
+        con = duckdb.connect(":memory:")
+        con.execute(f"CREATE TABLE soldiers_full AS SELECT * FROM read_parquet('{glob_str}')")
+        return con
+
+    if FULL_SEARCH_FILE.exists():
+        con = duckdb.connect(":memory:")
+        con.execute(
+            f"CREATE TABLE soldiers_full AS SELECT * FROM read_parquet('{FULL_SEARCH_FILE}')"
+        )
+        return con
+
+    return None
