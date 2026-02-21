@@ -28,6 +28,3 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
-
-# Скрипт подготовки (используется только локально)
-prepare_data.py

@@ -15,19 +15,19 @@ st.set_page_config(
 )
 
 # ── CSS ───────────────────────────────────────────────────────────
-css_path = pathlib.Path(__file__).resolve().parent.parent / "style.css"
+css_path = pathlib.Path(__file__).resolve().parent.parent / "assets" / "style.css"
 if css_path.exists():
     st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
 
 # ── Навигация ─────────────────────────────────────────────────────
 pages = [
-    st.Page("00_Обзор.py", title="Обзор", icon="🏠", default=True),
-    st.Page("01_Динамика.py", title="Динамика", icon="📈"),
-    st.Page("02_Тексты.py", title="Тексты", icon="📝"),
-    st.Page("03_География.py", title="География", icon="🗺️"),
-    st.Page("04_Демография.py", title="Демография", icon="🎖️"),
-    st.Page("05_DMI.py", title="DMI", icon="📊"),
-    st.Page("06_Поиск.py", title="Поиск", icon="🔍"),
+    st.Page("pages/00_Обзор.py", title="Обзор", icon="🏠", default=True),
+    st.Page("pages/01_Динамика.py", title="Динамика", icon="📈"),
+    st.Page("pages/02_Тексты.py", title="Тексты", icon="📝"),
+    st.Page("pages/03_География.py", title="География", icon="🗺️"),
+    st.Page("pages/04_Демография.py", title="Демография", icon="🎖️"),
+    st.Page("pages/05_DMI.py", title="DMI", icon="📊"),
+    st.Page("pages/06_Поиск.py", title="Поиск", icon="🔍"),
 ]
 
 pg = st.navigation(pages)

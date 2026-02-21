@@ -102,9 +102,10 @@ if story_col and awards_col:
         hovertemplate="%{text}<br>Story: %{x:.1f}%<br>Awards: %{y:.1f}%<extra></extra>",
     ))
 
-    if len(df) > 3:
-        z = np.polyfit(df[story_col].dropna(), df[awards_col].dropna(), 1)
-        tx = np.linspace(df[story_col].min(), df[story_col].max(), 100)
+    df_scatter = df[[story_col, awards_col]].dropna()
+    if len(df_scatter) > 3:
+        z = np.polyfit(df_scatter[story_col], df_scatter[awards_col], 1)
+        tx = np.linspace(df_scatter[story_col].min(), df_scatter[story_col].max(), 100)
         fig2.add_trace(go.Scatter(
             x=tx, y=np.polyval(z, tx),
             mode="lines",
