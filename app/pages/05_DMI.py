@@ -185,13 +185,14 @@ if len(numeric_cols) >= 3:
         texttemplate="%{text}",
         hovertemplate="%{y} × %{x}<br>r = %{z:.3f}<extra></extra>",
     ))
+    # FIX: xaxis/yaxis конфликтуют с PLOTLY_LAYOUT — переопределяем отдельным вызовом
     fig4.update_layout(
         **PLOTLY_LAYOUT,
         title="Корреляции между компонентами",
         height=500,
-        xaxis=dict(tickangle=45, tickfont=dict(size=10)),
-        yaxis=dict(tickfont=dict(size=10)),
     )
+    fig4.update_xaxes(tickangle=45, tickfont=dict(size=10))
+    fig4.update_yaxes(tickfont=dict(size=10))
     st.plotly_chart(fig4, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════

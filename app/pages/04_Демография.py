@@ -84,12 +84,19 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
         )
 
     if "death_year" in df.columns:
-        # Агрегация: медианный возраст по (rank_group, death_year)
+        # Агрегация: средневзвешенный возраст по (rank_group, death_year)
+        # FIX: векторная агрегация вместо groupby().apply() (FutureWarning в pandas 2.x)
         if "count" in df.columns:
-            # Взвешенная медиана — приблизительно через средневзвешенное
-            agg = df.groupby(["rank_group", "death_year"]).apply(
-                lambda g: np.average(g["age"], weights=g["count"]) if g["count"].sum() > 0 else np.nan
-            ).reset_index(name="median_age")
+            df_tmp = df.copy()
+            df_tmp["weighted_age"] = df_tmp["age"] * df_tmp["count"]
+            _agg = df_tmp.groupby(["rank_group", "death_year"]).agg(
+                sum_w=("weighted_age", "sum"),
+                sum_c=("count", "sum"),
+            ).reset_index()
+            _agg["median_age"] = np.where(
+                _agg["sum_c"] > 0, _agg["sum_w"] / _agg["sum_c"], np.nan
+            )
+            agg = _agg.drop(columns=["sum_w", "sum_c"])
         else:
             agg = df.groupby(["rank_group", "death_year"])["age"].median().reset_index(name="median_age")
 

@@ -58,6 +58,7 @@ with tab1:
 
         with col1:
             # Stacked area
+            # FIX: yaxis уже есть в PLOTLY_LAYOUT — переопределяем отдельным вызовом
             fig = go.Figure()
             for ntype in NARRATIVE_TYPES:
                 if ntype in df_narr.columns:
@@ -75,9 +76,9 @@ with tab1:
                 title="Доли нарративов по годам (%)",
                 xaxis_title="Год публикации",
                 yaxis_title="Доля (%)",
-                yaxis=dict(range=[0, 100], gridcolor="#E0E0E0"),
                 height=420,
             )
+            fig.update_yaxes(range=[0, 100], gridcolor="#E0E0E0")
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
@@ -270,14 +271,15 @@ with tab4:
                     hovertemplate="%{y}: %{x:.3f}<extra></extra>",
                 ))
                 topic_label = sub["topic_label"].iloc[0] if "topic_label" in sub.columns else f"Тема {tid}"
+                # FIX: margin и yaxis конфликтуют с PLOTLY_LAYOUT — разбиваем на 2 вызова
                 fig.update_layout(
                     **PLOTLY_LAYOUT,
                     title=f"{topic_label}",
                     height=280,
-                    margin=dict(l=80, r=10, t=40, b=30),
-                    yaxis=dict(autorange="reversed"),
                     showlegend=False,
                 )
+                fig.update_layout(margin=dict(l=80, r=10, t=40, b=30))
+                fig.update_yaxes(autorange="reversed")
                 st.plotly_chart(fig, use_container_width=True)
 
     # Эволюция тем
@@ -342,13 +344,14 @@ with tab5:
                     marker_color=BLUE if etype == "LOC" else ORANGE,
                     hovertemplate="%{y}<br>Упоминаний: %{x:,.0f}<extra></extra>",
                 ))
+                # FIX: margin конфликтует с PLOTLY_LAYOUT — разбиваем на 2 вызова
                 fig.update_layout(
                     **PLOTLY_LAYOUT,
                     title=title,
                     height=700,
-                    margin=dict(l=180, r=10, t=40, b=30),
                     showlegend=False,
                 )
+                fig.update_layout(margin=dict(l=180, r=10, t=40, b=30))
                 st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Данные ner_top_entities.parquet не найдены.")

@@ -27,9 +27,11 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 ROOT = Path(__file__).resolve().parent.parent
 AGG_DIR = ROOT / "data" / "aggregated"
 SAMPLE_DIR = ROOT / "data" / "sample"
+FULL_DIR = ROOT / "data" / "full"
 
 AGG_DIR.mkdir(parents=True, exist_ok=True)
 SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+FULL_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def log(msg: str):
@@ -404,6 +406,19 @@ def make_sample(df: pd.DataFrame, n: int = 50_000):
     log(f"Сэмпл сохранён: {len(sample)} записей")
 
 
+def make_fts_index(df: pd.DataFrame):
+    log("soldiers_fts (все карточки с текстом)...")
+    keep_cols = [
+        "id", "url", "fio", "story", "region", "rank",
+        "birthday", "death", "awards_txt", "pub_date",
+    ]
+    keep_cols = [c for c in keep_cols if c in df.columns]
+    with_text = df[df["story"].notna() & (df["story"].str.len() > 10)][keep_cols].copy()
+    out_path = FULL_DIR / "soldiers_fts.parquet"
+    with_text.to_parquet(out_path, index=False)
+    log(f"FTS-индекс сохранён: {len(with_text):,} записей → {out_path}")
+
+
 # ═══════════════════════════════════════════════════════════════════
 # Main
 # ═══════════════════════════════════════════════════════════════════
@@ -447,9 +462,11 @@ def main():
     make_halflife_yearly(df)
     make_network_edges(df)
     make_sample(df, n=args.sample_size)
+    make_fts_index(df)
 
     log("✅ Готово! Все агрегаты сохранены в data/aggregated/")
     log(f"Сэмпл сохранён в {SAMPLE_DIR / 'soldiers_sample_50k.parquet'}")
+    log(f"FTS-индекс сохранён в {FULL_DIR / 'soldiers_fts.parquet'}")
     log("")
     log("Следующие шаги:")
     log("  1. git add data/")

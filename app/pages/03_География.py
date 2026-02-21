@@ -75,9 +75,10 @@ if not df_mig.empty:
             xaxis_title="Регион подачи",
             yaxis_title="Регион рождения",
             height=max(500, top_n * 25),
-            xaxis=dict(tickangle=45, tickfont=dict(size=10)),
-            yaxis=dict(tickfont=dict(size=10), autorange="reversed"),
         )
+        # FIX: xaxis/yaxis конфликтуют с PLOTLY_LAYOUT — переопределяем отдельным вызовом
+        fig.update_xaxes(tickangle=45, tickfont=dict(size=10))
+        fig.update_yaxes(tickfont=dict(size=10), autorange="reversed")
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Ожидаются столбцы birth_region, submit_region, count.")
@@ -147,14 +148,15 @@ if not df_edges.empty:
             marker_color=LIGHT_BLUE,
             hovertemplate="%{y}<br>Карточек: %{x:,.0f}<extra></extra>",
         ))
+        # FIX: margin конфликтует с PLOTLY_LAYOUT — разбиваем на 2 вызова
         fig_bar.update_layout(
             **PLOTLY_LAYOUT,
             title="Топ-20 межрегиональных потоков памяти",
             xaxis_title="Количество карточек",
             height=550,
-            margin=dict(l=300, r=30, t=50, b=50),
             showlegend=False,
         )
+        fig_bar.update_layout(margin=dict(l=300, r=30, t=50, b=50))
         st.plotly_chart(fig_bar, use_container_width=True)
     else:
         st.warning("Ожидаются столбцы source, target, count.")
