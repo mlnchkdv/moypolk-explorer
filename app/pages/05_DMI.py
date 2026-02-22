@@ -6,7 +6,7 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
-from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, GREEN, DMI_GINI, STORY_VS_AWARDS_R
+from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, GREEN, DMI_GINI, STORY_VS_AWARDS_R, TOTAL_CARDS
 from data_loader import load_dmi_by_region
 
 st.title("📊 Индекс цифровой памяти (DMI)")
@@ -15,6 +15,7 @@ st.markdown(
     "DMI — композитный индекс, характеризующий «полноту» цифровой памяти региона. "
     "Учитывает долю карточек с текстом, фотографиями, наградами и другие параметры."
 )
+st.caption(f"Индекс DMI рассчитан по **{TOTAL_CARDS:,}** карточкам.".replace(",", "\u202f"))
 
 # ── Данные ────────────────────────────────────────────────────────
 df = load_dmi_by_region()

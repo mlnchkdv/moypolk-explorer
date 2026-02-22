@@ -311,19 +311,24 @@ if search_clicked or query_text or selected_region != "Все регионы" or
     page = min(st.session_state.full_search_page, max_pages - 1)
     offset = page * PAGE_SIZE
 
-    if total_pages > 1:
+    def _render_pagination(suffix: str):
+        """Отрисовка блока пагинации (вызывается сверху и снизу)."""
+        if total_pages <= 1:
+            return
         pc1, pc2, pc3 = st.columns([1, 3, 1])
         with pc1:
-            if st.button("← Назад", disabled=page == 0, key="prev_full"):
+            if st.button("← Назад", disabled=page == 0, key=f"prev_{suffix}"):
                 st.session_state.full_search_page = max(0, page - 1)
                 st.rerun()
         with pc2:
             tail = f" (показано первые {max_pages} из {total_pages})" if total_pages > max_pages else ""
             st.caption(f"Страница {page + 1} из {max_pages}{tail}")
         with pc3:
-            if st.button("Вперёд →", disabled=page >= max_pages - 1, key="next_full"):
+            if st.button("Вперёд →", disabled=page >= max_pages - 1, key=f"next_{suffix}"):
                 st.session_state.full_search_page = page + 1
                 st.rerun()
+
+    _render_pagination("top")
 
     # ── Результаты ─────────────────────────────────────────────────
     select_cols = "id, fio, region, rank, birthday, death, story, awards_txt, url"
@@ -413,6 +418,9 @@ if search_clicked or query_text or selected_region != "Все регионы" or
                     metric_cols = st.columns(len(m))
                     for mc, (k, v) in zip(metric_cols, m.items()):
                         mc.metric(k, v)
+
+    # ── Пагинация внизу ─────────────────────────────────────────
+    _render_pagination("bottom")
 else:
     st.markdown(
         "### Как использовать\n\n"

@@ -6,7 +6,7 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
-from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, MONTHS_RU, MONTHS_RU_FULL
+from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, MONTHS_RU, MONTHS_RU_FULL, TOTAL_CARDS
 from data_loader import load_monthly_counts, load_halflife_yearly
 
 st.title("📈 Динамика публикаций")
@@ -15,6 +15,7 @@ st.markdown(
     "Анализ временной динамики: когда и как публиковались карточки ветеранов. "
     "Выявление сезонных паттернов и скорости затухания активности."
 )
+st.caption(f"Все графики рассчитаны на основе **{TOTAL_CARDS:,}** карточек.".replace(",", "\u202f"))
 
 # ── Данные ────────────────────────────────────────────────────────
 df_monthly = load_monthly_counts()

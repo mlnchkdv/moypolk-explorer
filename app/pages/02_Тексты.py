@@ -8,6 +8,7 @@ import numpy as np
 from config import (
     PLOTLY_LAYOUT, BLUE, RED, GREY,
     NARRATIVE_COLORS, NARRATIVE_TYPES, PALETTE, ORANGE,
+    TOTAL_CARDS,
 )
 from data_loader import (
     load_narrative_types_yearly, load_sentiment_yearly,
@@ -53,6 +54,11 @@ with tab1:
         )
 
     if not df_narr.empty:
+        n_years = len(df_narr)
+        st.caption(
+            f"Классификация проведена по всем **{TOTAL_CARDS:,}** карточкам "
+            f"за {n_years} лет публикации.".replace(",", "\u202f")
+        )
         col1, col2 = st.columns(2)
 
         with col1:
@@ -129,6 +135,10 @@ with tab2:
         )
 
     if not df_sent.empty:
+        st.caption(
+            f"Тональность рассчитана по **{TOTAL_CARDS:,}** карточкам "
+            f"за {len(df_sent)} лет публикации.".replace(",", "\u202f")
+        )
         col1, col2 = st.columns(2)
 
         with col1:
@@ -218,6 +228,12 @@ with tab3:
         )
 
     if not df_mattr.empty:
+        st.caption(
+            "MATTR рассчитан на случайной выборке **5 000 текстов** (> 100 символов) "
+            f"из {TOTAL_CARDS:,} карточек. Разбивка по типам — на той же выборке.".replace(",", "\u202f")
+        )
+
+        # ── Общий MATTR по годам (левый) ──────────────────────────
         col1, col2 = st.columns(2)
 
         with col1:
@@ -228,7 +244,7 @@ with tab3:
                 mode="lines+markers",
                 line=dict(color=BLUE, width=2),
                 marker=dict(size=5),
-                name="MATTR",
+                name="Общий MATTR",
                 hovertemplate="Год %{x}<br>MATTR: %{y:.4f}<extra></extra>",
             ))
 
@@ -246,31 +262,46 @@ with tab3:
 
             fig.update_layout(
                 **PLOTLY_LAYOUT,
-                title="Среднее лексическое разнообразие по годам",
+                title="Общий MATTR по годам",
                 xaxis_title="Год публикации",
                 yaxis_title="MATTR",
                 height=420,
             )
             st.plotly_chart(fig, use_container_width=True)
 
+        # ── MATTR по типам нарративов по годам (правый) ───────────
         with col2:
             type_cols = [c for c in df_mattr.columns if c.startswith("mattr_")]
             if type_cols:
-                means = {}
+                fig2 = go.Figure()
                 for c in type_cols:
-                    val = df_mattr[c].dropna().mean()
-                    if not np.isnan(val):
-                        means[c.replace("mattr_", "")] = val
+                    ntype = c.replace("mattr_", "")
+                    valid = df_mattr[["year", c]].dropna()
+                    if valid.empty:
+                        continue
+                    fig2.add_trace(go.Scatter(
+                        x=valid["year"],
+                        y=valid[c],
+                        mode="lines+markers",
+                        name=ntype,
+                        line=dict(color=NARRATIVE_COLORS.get(ntype, GREY), width=2),
+                        marker=dict(size=4),
+                        hovertemplate=f"{ntype}<br>Год: %{{x}}<br>MATTR: %{{y:.4f}}<extra></extra>",
+                    ))
+                fig2.update_layout(
+                    **PLOTLY_LAYOUT,
+                    title="MATTR по типам нарративов (по годам)",
+                    xaxis_title="Год публикации",
+                    yaxis_title="MATTR",
+                    height=420,
+                )
+                st.plotly_chart(fig2, use_container_width=True)
             else:
-                # Ориентировочные значения для каждого жанра
+                # Fallback: ориентировочные значения
                 means = {
-                    "Формуляр":        0.52,
-                    "Смешанный":       0.63,
-                    "Семейная история": 0.70,
-                    "Мемуар":          0.73,
+                    "Формуляр": 0.52, "Смешанный": 0.63,
+                    "Семейная история": 0.70, "Мемуар": 0.73,
                 }
-
-            if means:
                 sorted_means = dict(sorted(means.items(), key=lambda x: x[1]))
                 fig2 = go.Figure(go.Bar(
                     x=list(sorted_means.keys()),
@@ -282,7 +313,7 @@ with tab3:
                 ))
                 fig2.update_layout(
                     **PLOTLY_LAYOUT,
-                    title="MATTR по типам нарративов",
+                    title="MATTR по типам нарративов (среднее)",
                     xaxis_title="Тип нарратива",
                     yaxis_title="Средний MATTR",
                     height=420,
@@ -319,6 +350,10 @@ with tab4:
         )
 
     if not df_topics.empty:
+        st.caption(
+            f"LDA-модель обучена на текстовом корпусе из **{TOTAL_CARDS:,}** карточек. "
+            "Показаны 7 тем и их эволюция по годам.".replace(",", "\u202f")
+        )
         topics_list = sorted(df_topics["topic_id"].unique())
         n_cols = 3
         cols = st.columns(n_cols)
@@ -396,6 +431,9 @@ with tab5:
         )
 
     if not df_ner.empty:
+        st.caption(
+            f"Именованные сущности извлечены из текстового корпуса **{TOTAL_CARDS:,}** карточек.".replace(",", "\u202f")
+        )
         col1, col2 = st.columns(2)
 
         for etype, title, col in [

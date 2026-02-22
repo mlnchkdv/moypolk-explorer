@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
 
-from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, GREEN, PCT_LOCAL_MEMORY
+from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, GREEN, PCT_LOCAL_MEMORY, TOTAL_CARDS
 from data_loader import load_migration_matrix, load_network_edges
 
 st.title("🗺️ География памяти")
@@ -13,6 +13,7 @@ st.markdown(
     "Пространственный анализ: откуда родом ветераны и откуда поданы карточки. "
     "Миграционные потоки XX века отражаются в географии цифровой памяти."
 )
+st.caption(f"Миграционный анализ рассчитан на основе **{TOTAL_CARDS:,}** карточек.".replace(",", "\u202f"))
 
 # ── Данные ────────────────────────────────────────────────────────
 df_mig = load_migration_matrix()

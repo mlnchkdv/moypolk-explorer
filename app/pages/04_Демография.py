@@ -2,11 +2,10 @@
 
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
 import pandas as pd
 import numpy as np
 
-from config import PLOTLY_LAYOUT, BLUE, RED, LIGHT_BLUE, ORANGE, GREEN, PALETTE, AGE_GAP_RANGE
+from config import PLOTLY_LAYOUT, BLUE, RED, PALETTE, AGE_GAP_RANGE, TOTAL_CARDS
 from data_loader import load_rank_age_distribution
 
 st.title("🎖️ Демография ветеранов")
@@ -24,14 +23,20 @@ df = load_rank_age_distribution()
 # ═══════════════════════════════════════════════════════════════════
 st.subheader("Распределение возраста по званиям")
 
-with st.expander("ℹ️ Как читать"):
-    st.markdown(
-        "Каждая кривая — распределение возраста на момент гибели для определённой "
-        "категории звания. Наложение (overlap) показывает, насколько схожи или различны "
-        "возрастные профили рядовых и офицеров."
+if not df.empty and "rank_group" in df.columns and "age" in df.columns:
+    total_records = int(df["count"].sum()) if "count" in df.columns else len(df)
+    st.caption(
+        f"Рассчитано на основе **{total_records:,}** записей "
+        f"(из {TOTAL_CARDS:,} карточек в датасете) с указанными годами рождения и гибели.".replace(",", "\u202f")
     )
 
-if not df.empty and "rank_group" in df.columns and "age" in df.columns:
+    with st.expander("ℹ️ Как читать"):
+        st.markdown(
+            "Каждая кривая — распределение возраста на момент гибели для определённой "
+            "категории звания. Наложение (overlap) показывает, насколько схожи или различны "
+            "возрастные профили рядовых и офицеров."
+        )
+
     rank_groups = sorted(df["rank_group"].unique())
     colors = {rg: PALETTE[i % len(PALETTE)] for i, rg in enumerate(rank_groups)}
 
@@ -39,24 +44,24 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
     for rg in rank_groups:
         sub = df[df["rank_group"] == rg]
         if "count" in sub.columns:
-            # Данные уже агрегированы: age, count
+            # Агрегируем count по age для каждой группы звания (суммируем годы гибели)
+            age_totals = sub.groupby("age")["count"].sum().sort_index()
             fig.add_trace(go.Scatter(
-                x=sub["age"],
-                y=sub["count"],
+                x=age_totals.index,
+                y=age_totals.values,
                 mode="lines",
                 name=rg,
                 fill="tozeroy",
-                opacity=0.5,
-                line=dict(color=colors[rg], width=2),
+                line=dict(color=colors[rg], width=3),
+                opacity=0.6,
                 hovertemplate=f"{rg}<br>Возраст: %{{x}}<br>Карточек: %{{y:,.0f}}<extra></extra>",
             ))
         else:
-            # Если count отсутствует, используем histogram-like подход
             fig.add_trace(go.Histogram(
                 x=sub["age"],
                 name=rg,
                 marker_color=colors[rg],
-                opacity=0.5,
+                opacity=0.6,
                 nbinsx=50,
             ))
 
@@ -64,11 +69,19 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
         **PLOTLY_LAYOUT,
         title="Распределение возраста по категориям звания",
         xaxis_title="Возраст (лет)",
-        yaxis_title="Количество",
+        yaxis_title="Количество карточек",
         barmode="overlay",
-        height=450,
+        height=500,
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    st.info(
+        "**Вывод для исследователя.** Пик распределения для рядовых приходится на "
+        "18–25 лет — призывной возраст. Офицеры распределены шире: кадровый состав был "
+        "старше на начало войны. Совпадение пиков в 20–25 лет указывает на младших "
+        "лейтенантов из ускоренных выпусков офицерских курсов 1941–1942.",
+        icon="🔬",
+    )
 
     # ═══════════════════════════════════════════════════════════════
     # 2. Медианный возраст по годам гибели — конвергенция
@@ -84,8 +97,6 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
         )
 
     if "death_year" in df.columns:
-        # Агрегация: средневзвешенный возраст по (rank_group, death_year)
-        # FIX: векторная агрегация вместо groupby().apply() (FutureWarning в pandas 2.x)
         if "count" in df.columns:
             df_tmp = df.copy()
             df_tmp["weighted_age"] = df_tmp["age"] * df_tmp["count"]
@@ -113,8 +124,8 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
                 y=sub["median_age"],
                 mode="lines+markers",
                 name=rg,
-                line=dict(color=colors[rg], width=2),
-                marker=dict(size=8),
+                line=dict(color=colors[rg], width=3),
+                marker=dict(size=10),
                 hovertemplate=f"{rg}<br>Год: %{{x}}<br>Медианный возраст: %{{y:.1f}}<extra></extra>",
             ))
 
@@ -130,7 +141,6 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
         # Разрыв
         if len(rank_groups) >= 2:
             st.markdown("#### Динамика возрастного разрыва")
-            # Разрыв между первой (рядовые) и последней (офицеры) группой
             rg1, rg2 = rank_groups[0], rank_groups[-1]
             m1 = war_years[war_years["rank_group"] == rg1].set_index("death_year")["median_age"]
             m2 = war_years[war_years["rank_group"] == rg2].set_index("death_year")["median_age"]
@@ -154,92 +164,12 @@ if not df.empty and "rank_group" in df.columns and "age" in df.columns:
                 )
                 st.plotly_chart(fig3, use_container_width=True)
 
-    # ═══════════════════════════════════════════════════════════════
-    # 3. Таблица KS-тестов
-    # ═══════════════════════════════════════════════════════════════
-    st.subheader("Тесты Колмогорова–Смирнова")
-
-    with st.expander("ℹ️ Метод"):
-        st.markdown(
-            "Двухвыборочный тест KS проверяет, различаются ли распределения возраста "
-            "между парами категорий звания. Малый p-value (< 0.05) означает "
-            "статистически значимое различие. "
-            "Реализован на NumPy без внешних зависимостей."
-        )
-
-    def ks_2samp_numpy(x: np.ndarray, y: np.ndarray):
-        """Двухвыборочный тест KS на основе NumPy."""
-        if len(x) == 0 or len(y) == 0:
-            return np.nan, np.nan
-        x = np.sort(x)
-        y = np.sort(y)
-        n1, n2 = len(x), len(y)
-        combined = np.sort(np.concatenate([x, y]))
-        cdf_x = np.searchsorted(x, combined, side="right") / n1
-        cdf_y = np.searchsorted(y, combined, side="right") / n2
-        d = float(np.max(np.abs(cdf_x - cdf_y)))
-        # Аппроксимация p-value через распределение Колмогорова
-        n_eff = (n1 * n2) / (n1 + n2)
-        z = d * np.sqrt(n_eff)
-        # P = 2 * sum_{k=1}^{inf} (-1)^{k-1} * exp(-2 k^2 z^2)
-        p = 2.0 * sum(
-            ((-1) ** (k - 1)) * np.exp(-2.0 * k * k * z * z)
-            for k in range(1, 50)
-        )
-        p = float(np.clip(p, 0.0, 1.0))
-        return d, p
-
-    if len(rank_groups) >= 2:
-        # Реконструируем выборки из агрегированных данных (age, count)
-        # Ограничиваем до 5000 точек на группу для скорости
-        MAX_SAMPLE = 5000
-        samples = {}
-        for rg in rank_groups:
-            sub = df[df["rank_group"] == rg]
-            if "count" in sub.columns:
-                ages = sub["age"].values.astype(int)
-                counts = sub["count"].values.astype(int)
-                expanded = np.repeat(ages, counts)
-                if len(expanded) > MAX_SAMPLE:
-                    rng = np.random.default_rng(42)
-                    expanded = rng.choice(expanded, MAX_SAMPLE, replace=False)
-                samples[rg] = expanded
-            else:
-                samples[rg] = sub["age"].dropna().values
-
-        ks_data = []
-        for i in range(len(rank_groups)):
-            for j in range(i + 1, len(rank_groups)):
-                rg1, rg2 = rank_groups[i], rank_groups[j]
-                x, y = samples.get(rg1, np.array([])), samples.get(rg2, np.array([]))
-                d, p = ks_2samp_numpy(x, y)
-                if np.isnan(d):
-                    sig = "нет данных"
-                elif p < 0.001:
-                    sig = "✅ Да (p < 0.001)"
-                elif p < 0.05:
-                    sig = "✅ Да (p < 0.05)"
-                else:
-                    sig = "❌ Нет (p ≥ 0.05)"
-                ks_data.append({
-                    "Группа 1": rg1,
-                    "Группа 2": rg2,
-                    "n₁": len(x),
-                    "n₂": len(y),
-                    "KS-статистика": f"{d:.4f}" if not np.isnan(d) else "—",
-                    "p-value": f"{p:.4f}" if not np.isnan(p) else "—",
-                    "Значимое различие": sig,
-                })
-
-        st.dataframe(pd.DataFrame(ks_data), use_container_width=True, hide_index=True)
-
         st.info(
-            "**Вывод для исследователя.** Значимые различия в распределениях возраста "
-            "между группами (p < 0.05) подтверждают, что война не «выровняла» демографию "
-            "полностью: возрастные профили разных категорий звания статистически различались. "
-            "Сравните KS-статистику с графиком конвергенции: "
-            "высокая статистика при малом разрыве медиан указывает на различие в форме "
-            "распределения (дисперсия, асимметрия), а не только в центральной тенденции.",
+            "**Вывод для исследователя.** Сужение разрыва к 1945 г. объясняется двумя "
+            "факторами: 1) массовая мобилизация более старших возрастов в рядовой состав; "
+            "2) появление молодых офицеров из ускоренных выпусков. "
+            "Если разрыв в 1941 г. максимален — это отражает кадровый состав мирного "
+            "времени, когда офицеры были значительно старше рядовых.",
             icon="🔬",
         )
 
