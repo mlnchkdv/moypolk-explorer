@@ -2,6 +2,7 @@
 
 import pathlib
 import streamlit as st
+import streamlit.components.v1 as components
 from config import (
     TOTAL_CARDS, PCT_WITH_STORY, PCT_MAY, HALFLIFE_DAYS,
     NUM_LDA_TOPICS, DMI_GINI, SAMPLE_SIZE, AGE_GAP_RANGE,
@@ -51,7 +52,26 @@ with mcol1:
         )
     
     st.markdown("#### 🖼️ Презентация")
-    st.link_button("Открыть презентацию", url=f"file://{PRESENTATION_DIR}", use_container_width=True)
+    if PRESENTATION_DIR.exists():
+        with open(PRESENTATION_DIR, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        # Используем встроенный компонент для отображения HTML с кнопкой новой вкладки
+        components.html(
+            f"""
+            <script>
+            var htmlContent = `{html_content}`;
+            function openPresentation() {{
+                var win = window.open();
+                win.document.write(htmlContent);
+                win.document.close();
+            }}
+            </script>
+            <button onclick="openPresentation()" style="padding: 10px 20px; background-color: #1f77b4; color: white; text-decoration: none; border-radius: 5px; cursor: pointer; border: none; font-size: 16px;">📂 Открыть презентацию в новой вкладке</button>
+            """,
+            height=50
+        )
+    else:
+        st.warning("Файл презентации не найден")
 
 with mcol2:
     st.markdown("#### 🎬 Видео-пересказ")
