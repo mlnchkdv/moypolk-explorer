@@ -2,6 +2,7 @@
 
 import pathlib
 import streamlit as st
+import streamlit.components.v1 as components
 from config import (
     TOTAL_CARDS, PCT_WITH_STORY, PCT_MAY, HALFLIFE_DAYS,
     NUM_LDA_TOPICS, DMI_GINI, SAMPLE_SIZE, AGE_GAP_RANGE,
@@ -9,7 +10,7 @@ from config import (
 
 APP_DIR = pathlib.Path(__file__).resolve().parent.parent
 MEDIA_DIR = APP_DIR.parent / "media"
-PRESENTATION_DIR = APP_DIR.parent / "presentation" / "index.html"
+PRESENTATION_DIR = APP_DIR.parent / "presentation"
 
 st.title("🎖️ Бессмертный полк — исследовательская витрина")
 
@@ -51,10 +52,25 @@ with mcol1:
         )
     
     st.markdown("#### 🖼️ Презентация")
-    st.markdown(
-        f'<a href="../../../presentation/index.html" target="_blank" style="padding: 10px 20px; background-color: #1f77b4; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">📂 Открыть презентацию</a>',
-        unsafe_allow_html=True,
-    )
+    presentation_path = PRESENTATION_DIR / "index.html"
+    if presentation_path.exists():
+        with open(presentation_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        # Кодируем HTML в base64 для data URI
+        import base64
+        encoded_html = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
+        components.html(
+            f"""
+            <a href="data:text/html;base64,{encoded_html}" target="_blank" 
+               style="padding: 10px 20px; background-color: #1f77b4; color: white; 
+               text-decoration: none; border-radius: 5px; display: inline-block; cursor: pointer;">
+               📂 Открыть презентацию
+            </a>
+            """,
+            height=50
+        )
+    else:
+        st.warning("Файл презентации не найден по пути: " + str(presentation_path))
 
 with mcol2:
     st.markdown("#### 🎬 Видео-пересказ")
