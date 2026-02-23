@@ -9,6 +9,7 @@ from config import (
 
 APP_DIR = pathlib.Path(__file__).resolve().parent.parent
 MEDIA_DIR = APP_DIR.parent / "media"
+PRESENTATION_DIR = APP_DIR.parent / "presentation" / "index.html"
 
 st.title("🎖️ Бессмертный полк — исследовательская витрина")
 
@@ -49,8 +50,8 @@ with mcol1:
             icon="🎧",
         )
     
-    st.markdown("#### 🎞️ Презентация")
-    st.link_button("Открыть презентацию", url="presentation/index.html", use_container_width=True)
+    st.markdown("#### 🖼️ Презентация")
+    st.link_button("Открыть презентацию", url=f"file://{PRESENTATION_DIR}", use_container_width=True)
 
 with mcol2:
     st.markdown("#### 🎬 Видео-пересказ")
