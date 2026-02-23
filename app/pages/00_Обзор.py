@@ -2,7 +2,6 @@
 
 import pathlib
 import streamlit as st
-import streamlit.components.v1 as components
 from config import (
     TOTAL_CARDS, PCT_WITH_STORY, PCT_MAY, HALFLIFE_DAYS,
     NUM_LDA_TOPICS, DMI_GINI, SAMPLE_SIZE, AGE_GAP_RANGE,
@@ -10,7 +9,6 @@ from config import (
 
 APP_DIR = pathlib.Path(__file__).resolve().parent.parent
 MEDIA_DIR = APP_DIR.parent / "media"
-PRESENTATION_DIR = APP_DIR.parent / "presentation"
 
 st.title("🎖️ Бессмертный полк — исследовательская витрина")
 
@@ -50,16 +48,6 @@ with mcol1:
             "`media/Математика_миллиона_историй_Бессмертного_полка.m4a`",
             icon="🎧",
         )
-    
-    st.markdown("#### 🖼️ Презентация")
-    presentation_path = PRESENTATION_DIR / "index.html"
-    if presentation_path.exists():
-        with open(presentation_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
-        # Встраиваем HTML напрямую в страницу Streamlit
-        components.html(html_content, height=800, scrolling=True)
-    else:
-        st.warning("Файл презентации не найден по пути: " + str(presentation_path))
 
 with mcol2:
     st.markdown("#### 🎬 Видео-пересказ")
