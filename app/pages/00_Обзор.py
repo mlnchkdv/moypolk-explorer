@@ -52,7 +52,7 @@ with mcol1:
     
     st.markdown("#### 🖼️ Презентация")
     st.markdown(
-        f'<a href="file://{PRESENTATION_DIR}" target="_blank" style="padding: 10px 20px; background-color: #1f77b4; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">📂 Открыть презентацию</a>',
+        f'<a href="../../../presentation/index.html" target="_blank" style="padding: 10px 20px; background-color: #1f77b4; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">📂 Открыть презентацию</a>',
         unsafe_allow_html=True,
     )
 
