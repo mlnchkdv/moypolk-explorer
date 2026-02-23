@@ -56,19 +56,8 @@ with mcol1:
     if presentation_path.exists():
         with open(presentation_path, 'r', encoding='utf-8') as f:
             html_content = f.read()
-        # Кодируем HTML в base64 для data URI
-        import base64
-        encoded_html = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
-        components.html(
-            f"""
-            <a href="data:text/html;base64,{encoded_html}" target="_blank" 
-               style="padding: 10px 20px; background-color: #1f77b4; color: white; 
-               text-decoration: none; border-radius: 5px; display: inline-block; cursor: pointer;">
-               📂 Открыть презентацию
-            </a>
-            """,
-            height=50
-        )
+        # Встраиваем HTML напрямую в страницу Streamlit
+        components.html(html_content, height=800, scrolling=True)
     else:
         st.warning("Файл презентации не найден по пути: " + str(presentation_path))
 
